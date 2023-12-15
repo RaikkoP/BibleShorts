@@ -5,6 +5,7 @@ public class Main {
         BibleAPI Bible = new BibleAPI();
         try {
             Bible.getBible();
+            Bible.getBooks();
             Bible.getChapters();
         }
         catch(Exception err){

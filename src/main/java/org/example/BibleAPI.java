@@ -1,6 +1,10 @@
 package org.example;
 import java.lang.reflect.Array;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.HttpResponse;
@@ -14,9 +18,13 @@ public class BibleAPI {
     private Dotenv dotenv = Dotenv.load();
     private String apiKey;
     private String apiRoute;
+    private LinkedHashSet<String> Books;
+    private LinkedHashMap<String, ArrayList<String>> Chapters;
     private String id;
 
     public BibleAPI() {
+        Books = new LinkedHashSet<>();
+        Chapters = new LinkedHashMap<>();
         apiRoute = dotenv.get("API_ROUTE");
         apiKey = dotenv.get("API_KEY");
     }
@@ -36,17 +44,34 @@ public class BibleAPI {
             }
         }
     }
-    public void getChapters() throws UnirestException {
-        HttpResponse<JsonNode> response = Unirest.get(apiRoute + "/v1/bibles/" + this.id + "/books")
+    public void getBooks() throws UnirestException {
+        HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles/" + this.id + "/books")
                 .header("api-key", this.apiKey)
                 .asJson();
         JSONObject dataObj = response.getBody().getObject();
         JSONArray dataArray = dataObj.getJSONArray("data");
-        for(int i = 0; i < dataArray.length(); i++){
+        for(int i = 53; i < dataArray.length(); i++){
             JSONObject tempData = dataArray.getJSONObject(i);
-            Object tempDataName = tempData.get("nameLong");
-            Object tempDataId = tempData.get("id");
-            System.out.println(tempDataName.toString() + " " + tempDataId.toString());
+            String tempDataId = tempData.get("id").toString();
+            this.Books.add(tempDataId);
+        }
+        System.out.println(this.Books);
+    }
+    public void getChapters() throws UnirestException {
+        for(String key : this.Books){
+            ArrayList<String> chapList = new ArrayList<>();
+            HttpResponse<JsonNode> response = Unirest.get(apiRoute + "/v1/bibles/" + this.id + "/books/" + key + "/chapters")
+                    .header("api-key", this.apiKey)
+                    .asJson();
+            JSONObject dataObj = response.getBody().getObject();
+            JSONArray dataArray = dataObj.getJSONArray("data");
+            for (int i = 0; i < dataArray.length(); i++) {
+                JSONObject tempData = dataArray.getJSONObject(i);
+                String tempId = tempData.get("id").toString();
+                chapList.add(tempId);
+            }
+            this.Chapters.put(key, chapList);
+            System.out.println(this.Chapters);
         }
     }
 }
