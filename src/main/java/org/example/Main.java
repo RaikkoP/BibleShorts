@@ -27,7 +27,7 @@ public class Main {
             switch(biblesInput){
                 case "bibles":
                     try {
-
+                        Bible.getBibleList();
                     } catch(Exception err) {
                         System.out.println(err);
                     }
@@ -41,15 +41,19 @@ public class Main {
                     break;
                 }
             }
-            //Get Bible Books
-            //Get Bible Chapters
+            System.out.println("Please select either the New Testament or Old Testament");
+            String testamentInput = input.nextLine();
+
+            //Print out all books of given Bible and let user decide which books chapters he wants to use
             try {
-                books = Bible.getBooks(bibleId);
-                chapters = Bible.getChapters(books, bibleId);
-            }
-            catch(Exception err){
+                Bible.getBooks(bibleId, testamentInput);
+            } catch (Exception err) {
                 System.out.println(err);
             }
+
+            //Get Bible Chapters
+            System.out.println("Please pick what chapter you wish to use..");
+            String chapterInput = input.nextLine();
         }
     }
 }
