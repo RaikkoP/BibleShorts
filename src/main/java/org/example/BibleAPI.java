@@ -57,7 +57,8 @@ public class BibleAPI {
     }
 
     //Return all books of Bible
-    public void getBooks(String id, String testament) throws UnirestException {
+    public ArrayList<String> getBooks(String id, String testament) throws UnirestException {
+        ArrayList<String> booksList = new ArrayList<>();
         int startingBook = 0;
         int endingBooks = 0;
         HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles/" + id + "/books")
@@ -74,24 +75,22 @@ public class BibleAPI {
         for(int i = startingBook; i < endingBooks; i++){
             JSONObject tempData = jsonArray.getJSONObject(i);
             String tempDataId = tempData.get("id").toString();
-            System.out.println(tempDataId);
+            booksList.add(tempDataId);
         }
+        return null;
     }
 
-    public ArrayList<String> getChapters(ArrayList<String> books, String id) throws UnirestException {
+    public ArrayList<String> getChapters(String id, String book) throws UnirestException {
         ArrayList<String> chapters = new ArrayList<>();
-        for(String book : books){
-            HttpResponse<JsonNode> response = Unirest.get(apiRoute + "/v1/bibles/" + id + "/books/" + book + "/chapters")
-                    .header("api-key", this.apiKey)
-                    .asJson();
-            JSONObject dataObj = response.getBody().getObject();
-            JSONArray jsonArray = dataObj.getJSONArray("data");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject tempData = jsonArray.getJSONObject(i);
-                String tempId = tempData.get("id").toString();
-                chapters.add(tempId);
-            }
-            System.out.println(chapters);
+        HttpResponse<JsonNode> response = Unirest.get(apiRoute + "/v1/bibles/" + id + "/books/" + book + "/chapters")
+                .header("api-key", this.apiKey)
+                .asJson();
+        JSONObject dataObj = response.getBody().getObject();
+        JSONArray jsonArray = dataObj.getJSONArray("data");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject tempData = jsonArray.getJSONObject(i);
+            String tempId = tempData.get("id").toString();
+            chapters.add(tempId);
         }
         return chapters;
     }
