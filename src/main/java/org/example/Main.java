@@ -121,6 +121,7 @@ public class Main {
                 chapterId = chosenChapter;
             }
         }
+        //Get passages
         try {
             System.out.println(chapterId);
             System.out.println(bibleId);

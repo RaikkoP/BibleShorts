@@ -75,7 +75,7 @@ public class BibleAPI {
         }
         return booksList;
     }
-    //Get all verses from chapter
+    //Get passages
     public LinkedHashMap<String, Integer> getPassages(String chapterId, String bibleId) throws UnirestException{
         LinkedHashMap<String, Integer> sections = new LinkedHashMap<>();
         HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles/" + bibleId + "/passages/" + chapterId)
