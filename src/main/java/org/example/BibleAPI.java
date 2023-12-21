@@ -1,10 +1,6 @@
 package org.example;
-import java.lang.reflect.Array;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.HttpResponse;
@@ -22,56 +18,72 @@ public class BibleAPI {
         apiRoute = dotenv.get("API_ROUTE");
         apiKey = dotenv.get("API_KEY");
     }
-    public String getBible() throws UnirestException {
+
+    //Prints out list of Bibles
+    public void getBibleList() throws UnirestException {
         HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles")
                 .header("api-key", this.apiKey)
                 .asJson();
         JSONObject jsonObject = response.getBody().getObject();
-        JSONArray dataArray = jsonObject.getJSONArray("data");
-        for (int i = 0; i < dataArray.length(); i++){
-            JSONObject obj = dataArray.getJSONObject(i);
-            Object parsedObj = obj.get("name");
-            parsedObj.toString();
-            if(parsedObj.toString().contains("King James")){
-                Object getId = obj.get("id");
-                return getId.toString();
-            }
+        JSONArray jsonArray = jsonObject.getJSONArray("data");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject tempObj = jsonArray.getJSONObject(i);
+            String bibleName = tempObj.get("name").toString();
+            System.out.println(bibleName);
         }
-        System.out.println("Bible not found!");
-        return null;
     }
-    public ArrayList<String> getBooks(String id) throws UnirestException {
-        ArrayList<String> result = new ArrayList<>();
+
+    //Get chosen Bibles ID
+    public String getBible(String userInput) throws UnirestException {
+        HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles")
+                .header("api-key", this.apiKey)
+                .queryString("name", userInput)
+                .asJson();
+        JSONObject tempObject = response.getBody().getObject();
+        JSONArray tempArray = tempObject.getJSONArray("data");
+        String bibleId = tempArray.getJSONObject(0).get("id").toString();
+        return bibleId;
+    }
+
+    //Return all books of Testament
+    public LinkedHashMap<String, ArrayList<String>> getBooks(String id, String testament) throws UnirestException {
+        LinkedHashMap<String, ArrayList<String>> booksList = new LinkedHashMap<>();
+        int startingBook = 0;
+        int endingBooks = 0;
         HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles/" + id + "/books")
                 .header("api-key", this.apiKey)
+                .queryString("include-chapters", "true")
                 .asJson();
-        JSONObject dataObj = response.getBody().getObject();
-        JSONArray dataArray = dataObj.getJSONArray("data");
-        for(int i = 39; i < dataArray.length(); i++){
-            JSONObject tempData = dataArray.getJSONObject(i);
-            String tempDataId = tempData.get("id").toString();
-            result.add(tempDataId);
+        JSONObject tempData = response.getBody().getObject();
+        JSONArray tempArray = tempData.getJSONArray("data");
+        if(testament.contains("Old Testament")) {
+            endingBooks = 39;
+        } else if(testament.contains("New Testament")) {
+            startingBook = 39;
+            endingBooks = tempArray.length();
         }
-        System.out.println(result);
-        return result;
-    }
-    public LinkedHashMap<String, ArrayList<String>> getChapters(ArrayList<String> books, String id) throws UnirestException {
-        LinkedHashMap<String, ArrayList<String>> chapters = new LinkedHashMap<>();
-        for(String book : books){
-            ArrayList<String> chapList = new ArrayList<>();
-            HttpResponse<JsonNode> response = Unirest.get(apiRoute + "/v1/bibles/" + id + "/books/" + book + "/chapters")
-                    .header("api-key", this.apiKey)
-                    .asJson();
-            JSONObject dataObj = response.getBody().getObject();
-            JSONArray dataArray = dataObj.getJSONArray("data");
-            for (int i = 0; i < dataArray.length(); i++) {
-                JSONObject tempData = dataArray.getJSONObject(i);
-                String tempId = tempData.get("id").toString();
-                chapList.add(tempId);
+        for(int i = startingBook; i < endingBooks; i++){
+            ArrayList<String> chapters = new ArrayList<>();
+            String tempId = tempArray.getJSONObject(i).get("id").toString();
+            JSONArray tempChapters = tempArray.getJSONObject(i).getJSONArray("chapters");
+            for(int j = 0; j < tempChapters.length(); j++){
+                System.out.println(tempChapters.getJSONObject(j));
+                String tempChapter = tempChapters.getJSONObject(j).get("id").toString();
+                chapters.add(tempChapter);
             }
-            chapters.put(book, chapList);
-            System.out.println(chapters);
+            booksList.put(tempId, chapters);
         }
-        return chapters;
+        return booksList;
+    }
+    //Get all verses from chapter
+    public LinkedHashMap<String, Integer> getPassages(String chapterId, String bibleId) throws UnirestException{
+        LinkedHashMap<String, Integer> sections = new LinkedHashMap<>();
+        HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles/" + bibleId + "/passages/" + chapterId)
+                .header("api-key", this.apiKey)
+                .asJson();
+        System.out.println(response);
+        JSONObject tempData = response.getBody().getObject();
+        System.out.println(tempData);
+        return null;
     }
 }
