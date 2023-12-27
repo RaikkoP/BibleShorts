@@ -67,7 +67,6 @@ public class BibleAPI {
             String tempId = tempArray.getJSONObject(i).get("id").toString();
             JSONArray tempChapters = tempArray.getJSONObject(i).getJSONArray("chapters");
             for(int j = 0; j < tempChapters.length(); j++){
-                System.out.println(tempChapters.getJSONObject(j));
                 String tempChapter = tempChapters.getJSONObject(j).get("id").toString();
                 chapters.add(tempChapter);
             }
@@ -76,14 +75,13 @@ public class BibleAPI {
         return booksList;
     }
     //Get passages
-    public LinkedHashMap<String, Integer> getPassages(String chapterId, String bibleId) throws UnirestException{
-        LinkedHashMap<String, Integer> sections = new LinkedHashMap<>();
+    public String getPassages(String chapterId, String bibleId) throws UnirestException{
         HttpResponse<JsonNode> response = Unirest.get(this.apiRoute + "/v1/bibles/" + bibleId + "/passages/" + chapterId)
                 .header("api-key", this.apiKey)
                 .asJson();
-        System.out.println(response);
         JSONObject tempData = response.getBody().getObject();
-        System.out.println(tempData);
-        return null;
+        JSONObject tempArray = tempData.getJSONObject("data");
+        String passages = tempArray.get("content").toString();
+        return passages;
     }
 }

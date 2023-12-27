@@ -2,10 +2,12 @@ package org.example;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -81,6 +83,25 @@ public class Main {
     static ArrayList<String> chaptersOfBook (String bookId){
         return books.get(bookId);
     }
+
+    //Get passage without HTML code
+    static String getPassage (){
+        String response = "";
+        //Get passages
+        try {
+            response = bible.getPassages(chapterId, bibleId);
+        }catch(Exception err){
+            System.out.println(err);
+        }
+        //Split into array at HTML element points
+        return response.replaceAll("<.*?>", "").replaceAll("[0-9]", "");
+    }
+    static String resolvePythonScriptPath(String path){
+        File file = new File(path);
+        return file.getAbsolutePath();
+    }
+
+
     //Main Function
     public static void main(String[] args) {
 
@@ -121,13 +142,20 @@ public class Main {
                 chapterId = chosenChapter;
             }
         }
-        //Get passages
+        System.out.println(getPassage());
+        ProcessBuilder processBuilder = new ProcessBuilder("python3", resolvePythonScriptPath("MakeShort.py"));
         try {
-            System.out.println(chapterId);
-            System.out.println(bibleId);
-            bible.getPassages(chapterId, bibleId);
-        }catch(Exception err){
-            System.out.println(err);
+            Process process = processBuilder.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null){
+                System.out.println(line);
+            }
+            reader.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
