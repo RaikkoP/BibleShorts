@@ -1,6 +1,10 @@
 package org.example;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.client.methods.HttpPost;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -142,20 +146,11 @@ public class Main {
                 chapterId = chosenChapter;
             }
         }
-        System.out.println(getPassage());
-        ProcessBuilder processBuilder = new ProcessBuilder("python3", resolvePythonScriptPath("MakeShort.py"));
         try {
-            Process process = processBuilder.start();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null){
-                System.out.println(line);
-            }
-            reader.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            HttpResponse<JsonNode> response = Unirest.post("http://127.0.0.1:5000/" + getPassage()).asJson();
+        } catch (Exception err){
+            System.out.println(err);
         }
+        System.out.println(getPassage());
     }
 }
