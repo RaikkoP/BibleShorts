@@ -147,8 +147,11 @@ public class Main {
             }
         }
         try {
-            HttpResponse<JsonNode> response = Unirest.post("http://127.0.0.1:5000/" + getPassage()).asJson();
+            HttpResponse<String> response = Unirest.get("http://127.0.0.1:5000/")
+                    .queryString("verse", getPassage() )
+                    .asString();
         } catch (Exception err){
+            System.out.println("peepee");
             System.out.println(err);
         }
         System.out.println(getPassage());
