@@ -151,7 +151,6 @@ public class Main {
                     .queryString("verse", getPassage() )
                     .asString();
         } catch (Exception err){
-            System.out.println("peepee");
             System.out.println(err);
         }
         System.out.println(getPassage());
